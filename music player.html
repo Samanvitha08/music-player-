@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Music Player</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #282c34;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #ffffff;
+        }
+
+        .player {
+            background: #3b3f47;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            width: 350px;
+            text-align: center;
+        }
+
+        .controls button {
+            margin: 5px;
+            background: #61dafb;
+            border: none;
+            color: #282c34;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .controls button:hover {
+            background: #21a1f1;
+        }
+
+        .playlist {
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .playlist ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .playlist ul li {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #444;
+            transition: background 0.3s;
+        }
+
+        .playlist ul li:hover {
+            background: #444;
+        }
+
+        .search input, .category select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid #61dafb;
+            border-radius: 5px;
+            background: #50555e;
+            color: #ffffff;
+        }
+
+        .search input::placeholder {
+            color: #bbb;
+        }
+
+        .search input:focus {
+            outline: none;
+            border-color: #21a1f1;
+            background: #61dafb;
+            color: #282c34;
+        }
+
+        h1, h2 {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="player">
+        <h1>Web Music Player</h1>
+        <div class="controls">
+            <button id="prev">Previous</button>
+            <button id="play">Play</button>
+            <button id="pause">Pause</button>
+            <button id="next">Next</button>
+            <input type="range" id="volume" min="0" max="1" step="0.01">
+        </div>
+        <div class="playlist">
+            <h2>Playlist</h2>
+            <ul id="playlist">
+                <!-- Playlist items will be dynamically added here -->
+            </ul>
+        </div>
+        <div class="search">
+            <input type="text" id="search" placeholder="Search music...">
+        </div>
+        <div class="category">
+            <label for="genre">Filter by Genre:</label>
+            <select id="genre">
+                <option value="">All</option>
+                <option value="pop">Pop</option>
+                <option value="rock">Rock</option>
+                <option value="jazz">Jazz</option>
+                <option value="hip hop">Hip Hop</option>
+                <option value="classical">Classical</option>
+                <option value="electronic">Electronic</option>
+                <option value="country">Country</option>
+                <option value="blues">Blues</option>
+                <option value="reggae">Reggae</option>
+                <option value="metal">Metal</option>
+            </select>
+        </div>
+    </div>
+    <script>
+        const songs = [
+            { title: "Song 1", file: "song1.mp3", genre: "pop" },
+            { title: "Song 2", file: "song2.mp3", genre: "rock" },
+            { title: "Song 3", file: "song3.mp3", genre: "jazz" },
+            { title: "Song 4", file: "song4.mp3", genre: "hip hop" },
+            { title: "Song 5", file: "song5.mp3", genre: "classical" },
+            { title: "Song 6", file: "song6.mp3", genre: "electronic" },
+            { title: "Song 7", file: "song7.mp3", genre: "country" },
+            { title: "Song 8", file: "song8.mp3", genre: "blues" },
+            { title: "Song 9", file: "song9.mp3", genre: "reggae" },
+            { title: "Song 10", file: "song10.mp3", genre: "metal" },
+        ];
+
+        let currentSongIndex = 0;
+        const audio = new Audio();
+        const playlistElement = document.getElementById('playlist');
+        const searchInput = document.getElementById('search');
+        const genreSelect = document.getElementById('genre');
+
+        function loadPlaylist(filteredSongs = songs) {
+            playlistElement.innerHTML = '';
+            filteredSongs.forEach((song, index) => {
+                const li = document.createElement('li');
+                li.textContent = song.title;
+                li.addEventListener('click', () => playSong(index));
+                playlistElement.appendChild(li);
+            });
+        }
+
+        function playSong(index) {
+            currentSongIndex = index;
+            audio.src = songs[currentSongIndex].file;
+            audio.play();
+        }
+
+        document.getElementById('play').addEventListener('click', () => {
+            audio.play();
+        });
+
+        document.getElementById('pause').addEventListener('click', () => {
+            audio.pause();
+        });
+
+        document.getElementById('prev').addEventListener('click', () => {
+            if (currentSongIndex > 0) {
+                currentSongIndex--;
+                playSong(currentSongIndex);
+            }
+        });
+
+        document.getElementById('next').addEventListener('click', () => {
+            if (currentSongIndex < songs.length - 1) {
+                currentSongIndex++;
+                playSong(currentSongIndex);
+            }
+        });
+
+        document.getElementById('volume').addEventListener('input', (event) => {
+            audio.volume = event.target.value;
+        });
+
+        searchInput.addEventListener('input', (event) => {
+            filterSongs();
+        });
+
+        genreSelect.addEventListener('change', (event) => {
+            filterSongs();
+        });
+
+        function filterSongs() {
+            const query = searchInput.value.toLowerCase();
+            const genre = genreSelect.value;
+
+            const filteredSongs = songs.filter(song => {
+                const matchesQuery = song.title.toLowerCase().includes(query);
+                const matchesGenre = genre === "" || song.genre === genre;
+                return matchesQuery && matchesGenre;
+            });
+
+            loadPlaylist(filteredSongs);
+        }
+
+        loadPlaylist();
+    </script>
+</body>
+</html>
